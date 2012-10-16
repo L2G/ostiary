@@ -1,0 +1,11 @@
+Package: ostiary
+Version: 4.0-1
+Architecture: i386
+Maintainer: Ray Ingles <sorceror171@gmail.com>
+Installed-Size: 140
+Depends: libc6 (>= 2.4)
+Section: Network
+Priority: extra
+Homepage: http://ingles.homeunix.net/software/ost/
+Description: Simple, secure remote script execution
+ Ostiary allows a client to run scripts on a server in a secure, authenticated manner, using an extremely simple protocol that is immune to buffer-overflow attacks.

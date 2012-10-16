@@ -1,0 +1,243 @@
+.\" Copyright (C) 2003 Raymond Ingles.
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the
+.\" Free Software Foundation; either version 2, or (at your option) any
+.\" later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software Foundation,
+.\" Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+.\" $Id: ostiary.cfg.5,v 0.10.00 2004/01/25 20:12:11 worsel Exp $
+.\" .Dd January 25, 2004
+.PU
+.TH ostiary.cfg 5
+.SH NAME
+ostiary.cfg - Ostiary daemon configuration file
+.SH SYNOPSIS
+.B /etc/ostiary.cfg
+.SH DESCRIPTION
+.B ostiaryd
+reads configuration data from
+.I /etc/ostiary.cfg
+(or the file specified with
+.B "\-c"
+on the command line). The file contains keywords and keyword-argument
+pairs, one per line. A line consists of at least a keyword, optionally
+followed by
+"="
+and one or more arguments. Lines starting with
+"#"
+and empty lines are interpreted as comments.
+
+The possible keywords and their meanings are as follows:
+.SS Mandatory Fields
+.TP
+.B
+KILL="\fIpassphrase\fP"
+
+Specifies the "kill" passphrase. If
+.B ostiaryd
+receives a hash with the kill passphrase, it immediately exits.
+.TP
+.B
+ACTION="\fIsecret\fP","\fIcommand\fP"[,\fIuid\fP[,\fIgid\fP]]
+
+At least one
+.B ACTION
+must be specified. This associates a particular
+.I secret
+passphrase with a particular
+.IR command .
+The command should include a full path (e.g. "/usr/bin/sshd"). The
+.I uid
+and
+.I gid
+fields, if present, force the command to be run as the specified
+uid and gid, overiding the defaults. See
+.B DEFAULT_UID
+and
+.BR DEFAULT_GID .
+
+The
+.I gid
+field is optional, but if gid is specified, uid must be specified also.
+
+The
+.I secret
+field may contain any characters except carriage-return and linefeed.
+Quote characters may be included by escaping with a backslash.
+
+.SS Recommended Fields
+.TP
+.BI PORT= number
+
+This specifies the port that
+.B ostiaryd
+should listen on. If a port number is not specified on the command
+line, it must be defined in
+.BR ostiary.cfg .
+.SS Optional Fields
+.TP
+.BI MIN_LOGLEVEL= level
+
+See
+.BR syslog (3)
+for possible values. The default level is
+.IR LOG_NOTICE .
+Note that
+.I LOG_CRIT
+is the maximum value used by
+.BR ostiaryd .
+If this field is set to a higher value, no messages will be logged
+by
+.BR ostiaryd .
+.TP
+.BI DELAY= delay
+
+Specifies the
+.I delay
+in seconds that
+.B ostiaryd
+will pause between accepting client connections. This value cannot
+be less than 1. The default is 5 seconds.
+.TP
+.BI COMM_TIMEOUT= timeout
+
+Specifies how long, in seconds,
+.B ostiaryd
+will wait to receive or transmit data before giving up. The default is
+5 seconds.
+.TP
+.BI DEFAULT_UID= uid
+
+Specifies the numeric userid that programs should be run as, unless
+a value is specified in the
+.B ACTION
+definition. If this field is not present, programs will be run with
+the uid of
+.IR nobody .
+.TP
+.BI DEFAULT_GID= gid
+
+Specifies the numeric groupid that programs should be run as, unless
+a value is specified in the
+.B ACTION
+definition. If this field is not present, programs will be run with
+the gid of user
+.IR nobody .
+.TP
+.BI LOCAL_IP= address
+
+If this field is present,
+.B ostiaryd
+will only accept connections to the
+.I address
+specified. If this field is not specified, connections will be accepted
+on all available interfaces. This can be useful to restict Ostiary access
+to, e.g., only clients on internal LAN.
+.TP
+.BI MAX_BAD_CONNS= number
+
+Sets the maximum number of times a given IP address may cause any
+kind of error, from an incomplete connection to failing to provide
+a valid hash. Once a client has reached this limit, all further
+communication from that IP address is ignored.
+.TP
+.BI MAX_SINGLE_ERRS= number
+
+Sets the maximum number of times any single IP address may cause any
+kind of error. Once any incoming IP has reached this limit,
+.B ostiaryd
+will exit. By default there is no limit, because once a client is
+locked out there is very little they can do to cause damage.
+.TP
+.BI MAX_TOTAL_ERRS= number
+
+Sets the maximum number of errors that all IP addresses may cause.
+Once this many errors have ocurred, regardless of source,
+.B ostiaryd
+will exit. By default there is no limit, since even legitimate users
+will cause errors from time to time. Setting this field virtually
+guarantees that
+.B ostiaryd
+will exit at some point.
+.TP
+.B EXIT_ON_IPCACHE_FULL
+
+If present,
+.B ostiaryd
+will exit when the maximum number of "locked" clients is reached. As
+shipped, the maximum is 128, but this can be changed during compilation.
+.TP
+.B IGNORE_URANDOM
+
+If present,
+.B ostiaryd
+will use
+.BR random (3)
+to generate salt hashes instead of reading from
+.IR /dev/urandom .
+This can be useful if entropy is scarce and should be reserved for
+other applications, e.g. an SSL server.
+.TP
+.B SKIP_DETACH
+
+If present,
+.B ostiaryd
+will not detach from the terminal it was started from.
+This can be useful if 
+.B ostiaryd
+is being run from a service manager such as
+.B (x)inetd,
+.B daemontools
+or
+.B cygrunsrv.
+.TP
+.B
+LOCKOUT_ACTION="\fIsecret\fP","\fIcommand\fP"[,\fIuid\fP[,\fIgid\fP]]
+
+If
+.B LOCKOUT_ACTION
+is present, then the script
+.IR command
+will be run whenever an IP address is locked out. It will receive
+as an argument the IP address that has been locked out, in dotted-quad
+form. The
+.I uid
+and
+.I gid
+fields, if present, force the command to be run as the specified
+uid and gid, overiding the defaults. See
+.B DEFAULT_UID
+and
+.BR DEFAULT_GID .
+The
+.I secret
+field must be present, but its contents are ignored and may be empty.
+
+This can be used to, for example, update firewall rules to help
+ensure malicious IP addresses are permanently denied from using
+Ostiary, even if
+.B ostiaryd
+is restarted.
+
+.SH FILES
+.I /etc/ostiary.cfg
+
+Contains configuration data for
+.BR ostiaryd .
+This file should be readable only by the userid that
+.B ostiaryd
+runs as, since it contains password data.
+.SH AUTHORS
+Ostiary was written by Raymond Ingles.
+.SH SEE ALSO
+.BR ostclient (1),
+.BR ostiaryd (8)

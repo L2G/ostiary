@@ -1,0 +1,14 @@
+76d97c6b28865c82a004b9056d5f250a  usr/bin/ostiaryd
+c5e5894e3382879adffc684f68da57db  usr/bin/ostclient
+8da36e038271bf04edceb39ba2266b5c  usr/etc/ostiary.cfg
+200590811f837fbfbd82e1e0310c7acc  usr/share/man/man1/ostclient.1.gz
+ccf428fbb53d7c828f4459a0a9c7ebb6  usr/share/man/man5/ostiary.cfg.5.gz
+789dc2aaeaae6df3063d66a49100e52e  usr/share/man/man8/ostiaryd.8.gz
+66af26490bbe92c76054cda0f5a9e021  usr/share/doc/ostiary/changelog.gz
+d5845d335dba2b1e14b54ee091081496  usr/share/doc/ostiary/INSTALL.gz
+bcfd8c124ff586a600c24dc1df5f72a1  usr/share/doc/ostiary/README
+4cf53885d707d633f99e7841b42d0968  usr/share/doc/ostiary/TODO
+757ebebaa05ba88078fff1256e924e6a  usr/share/doc/ostiary/HASHES
+bf83519e0c2220079ba206492e404f3f  usr/share/doc/ostiary/README.Debian
+9862aefcd792f295b7436349647f50ca  usr/share/doc/ostiary/copyright
+603772102c96580b45b0a029a8c5e716  usr/share/doc/ostiary/changelog.Debian.gz

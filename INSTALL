@@ -1,0 +1,145 @@
+                             Installing Ostiary
+
+Table of Contents
+
+    1. Compiling Ostiary
+    2. Using Ostiary
+    3. Notes on Command Scripts
+    4. Windows Notes
+
+Compiling Ostiary
+
+   It should be a simple "./configure; make all". If you want to use tcp
+   wrappers, run "./configure --with-libwrap", optionally specifying the
+   directory it's in if configure doesn't find it. Use "./configure -h"
+   to find out about other configure options available.
+
+   Once it's built, you can run "make strip;make install". This will put
+   the binaries, man pages, and config file in the appropriate places.
+   The "make strip" step is optional but can make the executables quite
+   a bit smaller.
+
+   Note: if you do use tcp wrappers, make sure to update your hosts.allow
+   and hosts.deny file *before* testing ostiaryd...
+
+Using Ostiary
+
+   It's not that hard to set up Ostiary. You need to create a config file
+   (A sample 'ostiary.cfg' file with lots of comments is installed by
+   default. A copy is in the 'tests' directory, and should give you a good
+   start). If you want to set it up to run when your system boots up, I'm
+   afraid you'll need to perform that step yourself; there are too many
+   different ways for distributions to do that for me to handle them all.
+
+   By default, ostiaryd will look for a config file named "ostiary.cfg" in
+   "/usr/local/etc/". You can change the default location by setting the
+   'prefix' in the configure script. You can also specify a config file at
+   runtime on the command line. It logs using syslog() with the LOG_AUTH
+   facility code. (Typically you'll see its output in /var/log/authlog or
+   /var/log/messages. You'll have to check how your syslog daemon is set
+   up.) If you compiled with tcp wrappers, you'll probably need to update
+   /etc/hosts.allow and /etc/hosts.deny.
+
+   One note on the config file - it's processed in order. If you want to
+   debug the parsing, set the MIN_LOGLEVEL parameter at the top of the
+   file. (Note: this can result in passwords being logged to the syslog
+   files if you set the level to LOG_INFO or LOG_DEBUG!) Also, if you're
+   going to specify DEFAULT_UID and/or DEFAULT_GID, do so *before* the
+   ACTION lines.
+
+   You must assign a 'kill' password, and pick which port it will listen
+   on (there's no built-in default). Next, you need to set up one or more
+   command scripts to run, and choose passphrases for them. Currently
+   ostiaryd limits itself to eight commands maximum (in addition to the
+   'kill' command). If you need more, you'll need to edit ost.h, change
+   the value of MAX_NUM_SECRETS, and recompile.
+
+   When the scripts are run, they will get one argument - the IP address
+   that sent the command to run them, in dotted-quad form. If ostiaryd
+   isn't runnning as root, scripts will run with the same uid/gid as
+   ostiaryd.
+
+   If ostiaryd is run as root, by default it will try to run the scripts
+   as 'nobody.nogroup'. This means they probably won't have permissions to
+   do anything interesting. You'll need to think about what permissions the
+   scripts actually need; this is my way of forcing you to consider that.
+   You can specify what uid/gid scripts will run as by changing the default
+   from 'nobody', and also on a script-by-script basis. For example, you can
+   have your sshd scripts run as root, but your webserver restarting scripts
+   run as the same userid as the http daemon.
+
+   Passwords can be up to 63 characters, commands up to 127 characters.
+   (You can edit ost.h and recompile if you need more; don't forget to
+   update the clients, too, if you muck with the password length!) Note
+   that the name of a command should include the full path. Passwords can
+   contain just about any character except CR and LF. You can escape
+   quotes by preceeding them with backslash, like so: '\"'. Be advised
+   that you may have more trouble entering certain characters on
+   different clients.
+
+Notes On Writing Command Scripts
+
+   It turns out that sshd takes a while to get going. It needs to
+   generate new 'ephemeral' keys, which can take a while - at least a
+   couple minutes on my 68030 box. So killing and restarting sshd is not
+   really practical in my case.
+
+   Fortunately, there's an alternative; sshd can be set up to use TCP
+   Wrappers, which allow fine-grained control over who gets to access the
+   service and who doesn't. So, one can set up a script that manipulates
+   the /etc/hosts.allow file, adding and/or removing IPs in response to
+   commands. There are two sample scripts in the 'samples' directory -
+   one enables ssh for a specific IP the other locks things down and
+   kills all current ssh sessions.
+
+   Of course, if you've got a faster machine, you might be able to afford
+   killing and restarting sshd all the time.
+
+   Note that if you know that queries are going to be coming from a
+   particular net range (e.g., my Palm connects to Sprint's network, so I
+   know such queries will be coming from a particular netblock) you can
+   have the script make sure that a command came from the correct
+   neighborhood. You can also use tcp wrappers for this, if you enable
+   wrappers support when compiling ostiaryd.
+
+   Note that a "man in the middle" attack may be possible depending on
+   what your script does. If your script takes special action based on the
+   IP address of the client, someone who can intercept your communicaionts
+   and modify them can theoretically spoof this. For example, if you only
+   open up ssh to the IP address of the client, then a MITM could intercept
+   the command and open up ssh for their IP and not yours. For details, see
+   the FAQ section of the Ostiary website:
+
+    http://ingles.homeunix.net/software/ost/faqs.html#mitm
+
+Windows Notes
+
+   The "winclient" directory contains a Visual C++ 5.0 project to build
+   the Ostiary client. (It also works with version 6.0.) Select "Open
+   Workspace" and navigate to the "winclient.dsw" file.
+
+   Although there is a native Windows client, there is no native Windows
+   server at this time (volunteers are welcome). However, it is possible
+   to run an Ostiary server on Windows by using the Cygwin Unix
+   compatibility environment. (You will probably want to do this anyway,
+   as scripting on Windows tends to be more difficult.) Note that Cygwin
+   does not need to be installed on client machines, only on the servers.
+   (It may also work with "Services For Unix", but I haven't tried that.)
+
+   You will need to install the command 'cygrunsrv'; this is not installed
+   by default. Configure, compile, and install Ostiary as normal, then
+   run the following command from a Cygwin shell:
+
+   cygrunsrv -I Ostiary -p /usr/local/bin/ostiaryd.exe -f "Allows secure \
+   remote script execution." -a "-D"
+
+   You will have a new service in your "Services" control panel called
+   "Ostiary", which will behave like any other Windows service. Messages
+   will be logged to the NT event log; run "eventvwr" to see them. The
+   service will, by default, run as "Local System"; make sure that user
+   has rights to whatever scripts and files you'll need to manipulate.
+
+   NOTE: the setlogmask() function on Cygwin doesn't currently work, so
+   every message is logged, no matter what setting is passed. This means
+   that a lot of stuff gets into the application log, including passwords.
+   I'm researching a way to fix this, but for now just beware.

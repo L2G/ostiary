@@ -1,0 +1,22 @@
+Thanks are due to Dr. Robert Meier <eaglecoach@wwnet.com> for suggestionns
+and simplifications of the basic algorithms for Ostiary, as well as some
+extensions of the rpm spec file.
+
+Portions of the code were adapted from "Advanced Programming in the Unix
+Environment", by W. Richard Stevens. The 'clock cache' code is inspired
+by "Obfuscated C and Other Mysteries" by Don Libes.
+
+The SHA1 code is adapted from Steve Reid's public-domain SHA1
+implementation.
+
+The autoconf files were developed with the invaluable assistance of Mark
+Galassi's autoconf tutorial, located at
+"http://nis-www.lanl.gov/~rosalia/mydocs/autoconf_tutorial_toc.html".
+The autoconf macros to implement libwrap checking were taken from the
+apcupsd package.
+
+Bennett Todd <bet@rahul.net> created the RPM support and the ostiary.spec
+file, and brought HMAC to my attention.
+
+John Stamp <kinsayder@hotmail.com> corrected several bugs and clarified
+several of the debugging messages.

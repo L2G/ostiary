@@ -1,0 +1,113 @@
+.\" Copyright (C) 2003 Raymond Ingles.
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the
+.\" Free Software Foundation; either version 2, or (at your option) any
+.\" later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software Foundation,
+.\" Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+.\" $Id: ostiaryd.2.0,v 0.10.00 2004/01/25 20:12:11 worsel Exp $
+.\" .Dd January 25, 2004
+.PU
+.TH ostclient 1
+.SH NAME
+ostclient \- Ostiary client (remote script execution program)
+.SH SYNOPSIS
+.B ostclient " \-a "
+{
+.I "address"
+|
+.I "address:port"
+} [
+.RB "\-p "
+.I "port"
+] [
+.B "\-f "
+.I fd
+]
+.SH DESCRIPTION
+.B ostclient 
+(Ostiary client) is a program for executing commands on a remote
+machine. It is intended as a limited but highly secure alternative
+to ssh and lsh.
+
+The user first provides a passphrase that corresponds to a particular
+command to be run on the remote host. Then
+.B ostclient
+connects to the specified
+.I address 
+at the the specified
+.I port
+and receives a 'salt hash' from the server. Finally,
+.B ostclient
+hashes this salt with the passphrase provided by the user and
+sends the result back to the server. The current version of the hash
+uses HMAC-SHA256 (see
+.B RFC 2104
+). This is not compatible with older servers, which used either
+HMAC-SHA1 or HMAC-MD5.
+.br
+.SH OPTIONS
+.TP
+.BI \-a " address " | " address:port"
+The address (either name or dotted-quad IP address) of the host,
+optionally followed by the port to connect to on that server.
+.TP
+.BI \-p " port"
+The port to connect to. This can be specified as part of the address,
+or as a separate option here, but must be specified somewhere.
+.TP
+.BI \-f " fd"
+Tells
+.BR ostclient
+to read the passphrase from file descriptor number
+.I fd
+instead of interactively. This can be helpful when using ostclient in
+scripts. (See EXAMPLES below.)
+.SH EXAMPLES
+Normally
+.B ostclient
+reads the passphrase interactively from the terminal, but this does not
+work well in scripts. To allow script-driven use of
+.BR ostclient ,
+the
+.B \-f
+option may be used. This will tell
+.B ostclient
+to read the password from a file descriptor instead of interactively.
+Typically file descriptor 0 (stdin) will be used, but others are
+possible. As a convenience,
+.B ostclient
+will ignore any trailing whitespace, including CR characters.
+.PP
+For example, to use the secret "passphrase", the following command
+might be issued:
+.PP
+echo "passphrase" | ostclient -a 192.168.0.37 -p 5018 -f 0
+.PP
+Also, the following form may be used:
+.PP
+echo "passphrase" > tmpfile
+.br
+ostclient -a localhost:5018 -f 0 < tmpfile
+.SH AUTHORS
+.BR ostclient
+was developed by Raymond Ingles.
+.SH SEE ALSO
+.BR ostiary.cfg (5),
+.BR ostiaryd (8)
+
+H. Krawczyk, M. Bellare, R. Canetti,
+.I HMAC: Keyed-Hashing for Message Authentication
+.br
+February 1997,
+.B RFC 2104
+

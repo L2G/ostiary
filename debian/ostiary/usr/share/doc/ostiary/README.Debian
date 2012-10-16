@@ -1,0 +1,7 @@
+Ostiary for Debian
+------------------
+
+This is a preliminary package, that wasn't compiled with TCP wrappers support.
+I'm looking into how to configure that.
+
+ -- Ray Ingles <sorceror171@gmail.com>  Tue, 22 Sep 2009 13:50:23 -0400

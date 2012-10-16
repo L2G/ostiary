@@ -1,0 +1,206 @@
+###########################################################################
+#
+# This should be pretty straightforward.
+#
+# Basically, there are only two key defines - "WORDS_BIGENDIAN" if
+# you're on a big-endian machine (SPARC, M68K, PPC, etc.) and
+# "USE_TCPWRAPPERS" if you want tcp wrappers support.
+#
+# If you want tcp wrappers, you need to put '-lwrap' in the
+# "DAEMON_LIB_FLAGS" line. (The client doesn't use tcp wrappers,
+# obviously.)
+#
+# With any luck, all you'll need to do is uncomment the appropriate lines
+# below. Uncomment *one each* of MACHINE_FLAGS, *LIB_FLAGS, CC, and CC_FLAGS.
+#
+# Note: if you're using GCC on Solaris, AIX, etc., then use the Linux
+# or *BSD compiler options.
+#
+#CC = YOU MUST EDIT MAKEFILE!
+
+###################### *BSD boxen. ###########################
+# M68k, Sparc, PPC, etc.
+#MACHINE_FLAGS = -DOST_STARBSD=1 -DWORDS_BIGENDIAN
+#MACHINE_FLAGS = -DOST_STARBSD=1 -DWORDS_BIGENDIAN -DUSE_TCPWRAPPERS
+# Intel, Alpha, etc.
+#MACHINE_FLAGS = -DOST_STARBSD=1
+#MACHINE_FLAGS = -DOST_STARBSD=1 -DUSE_TCPWRAPPERS
+#
+#CLIENT_LIB_FLAGS =
+#
+#DAEMON_LIB_FLAGS =
+#DAEMON_LIB_FLAGS = -lwrap
+#
+#CC = gcc -pipe
+#CC_FLAGS =  -O2
+
+########################### Linux ############################
+# M68K, Sparc, PPC, etc.
+#MACHINE_FLAGS = -DOST_LINUX=1 -DWORDS_BIGENDIAN
+#MACHINE_FLAGS = -DOST_LINUX=1 -DWORDS_BIGENDIAN -DUSE_TCPWRAPPERS
+# Intel, Alpha, etc.
+#MACHINE_FLAGS = -DOST_LINUX=1
+#MACHINE_FLAGS = -DOST_LINUX=1 -DUSE_TCPWRAPPERS
+#
+#CLIENT_LIB_FLAGS =
+#
+#DAEMON_LIB_FLAGS =
+#DAEMON_LIB_FLAGS = -lwrap
+#
+#CC = gcc -pipe
+#CC_FLAGS = -O2
+
+##################### Cygwin (Intel) boxen. ##################
+# I don't think tcp wrappers is available here, and I don't know
+# of any little-endian Windows boxes anymore. Maybe WinCE?
+#MACHINE_FLAGS = -DOST_CYGWIN=1
+#CLIENT_LIB_FLAGS =
+#DAEMON_LIB_FLAGS =
+#CC = gcc -pipe
+#CC_FLAGS = -O2
+
+######################## Compaq Tru64 ########################
+#MACHINE_FLAGS = -DOST_TRU64=1
+#MACHINE_FLAGS = -DOST_TRU64=1 -DUSE_TCPWRAPPERS
+#
+#CLIENT_LIB_FLAGS =
+#
+#DAEMON_LIB_FLAGS = -lrt
+#DAEMON_LIB_FLAGS = -lrt -lwrap
+#
+#CC = cc
+#CC_FLAGS = -O
+
+######################### Solaris ############################
+#MACHINE_FLAGS =  -DOST_SOLARIS=1 -DWORDS_BIGENDIAN
+#MACHINE_FLAGS =  -DOST_SOLARIS=1 -DWORDS_BIGENDIAN -DUSE_TCPWRAPPERS
+#
+#CLIENT_LIB_FLAGS = -lsocket -lnsl -lresolv
+#
+#DAEMON_LIB_FLAGS = -lsocket -lnsl -lresolv
+#DAEMON_LIB_FLAGS = -lsocket -lnsl -lresolv -lwrap
+#
+#CC = /opt/compilers/workshop/5.0/SUNWspro/bin/cc
+#CC_FLAGS = -fast -O
+
+########################### AIX ##############################
+#MACHINE_FLAGS = -DOST_AIX=1 -DWORDS_BIGENDIAN
+#MACHINE_FLAGS = -DOST_AIX=1 -DWORDS_BIGENDIAN -DUSE_TCPWRAPPERS
+#
+#CLIENT_LIB_FLAGS =
+#
+#DAEMON_LIB_FLAGS =
+#DAEMON_LIB_FLAGS = -lwrap
+#
+#CC = /usr/ibmcxx/bin/xlC_r
+#CC = /usr/vacpp/bin/xlC_r
+#CC_FLAGS = -O
+
+########################## HP-UX #############################
+#MACHINE_FLAGS = -DOST_HP=1 -DWORDS_BIGENDIAN
+#MACHINE_FLAGS = -DOST_HP=1 -DWORDS_BIGENDIAN -DUSE_TCPWRAPPERS
+#
+#CLIENT_LIB_FLAGS =
+#
+#DAEMON_LIB_FLAGS =
+#DAEMON_LIB_FLAGS = -lwrap
+#
+#CC = cc
+#CC_FLAGS =  -Ae -O
+
+########################### IRIX #############################
+#MACHINE_FLAGS = -DOST_IRIX=1 -DWORDS_BIGENDIAN
+#MACHINE_FLAGS = -DOST_IRIX=1 -DWORDS_BIGENDIAN -DUSE_TCPWRAPPERS
+#
+#CLIENT_LIB_FLAGS =
+#
+#DAEMON_LIB_FLAGS =
+#DAEMON_LIB_FLAGS = -lwrap
+#
+#CC = cc
+#CC_FLAGS = -s -O2 -v
+
+########## You shouldn't need to change anything below this line. #########
+
+COMP = $(CC) $(CC_FLAGS)
+
+# By default, we strip the executables.
+default:: help
+
+# Note that we don't just 'rm *.o' - if we didn't make it, we have
+# no business rm'ing it.
+clean::
+	rm -f md5.o ost_main.o ost_debug.o ost_runcmd.o ost_ipcache.o \
+              ost_cfgparse.o ost_client.o ost_hash.o ost_getpass.o \
+              ost_forced_memset.o
+
+clobber:: clean
+	rm -f ostiaryd ostclient ostiaryd.exe ostclient.exe
+
+# If you want to debug things, use this target, and set the CC_FLAGS
+# variable above to '-g', or whatever your compiler uses.
+debug: ostiaryd ostclient
+
+vals:
+	@echo ${COMP}
+	@echo ${MACHINE_FLAGS}
+	@echo ${CLIENT_LIB_FLAGS}
+	@echo ${DAEMON_LIB_FLAGS}
+
+ostiaryd: Makefile md5.o ost_hash.o ost_main.o ost_debug.o ost_runcmd.o \
+          ost_ipcache.o ost_cfgparse.o ost_forced_memset.o
+	$(COMP) md5.o ost_hash.o ost_main.o ost_debug.o ost_runcmd.o \
+          ost_ipcache.o ost_cfgparse.o ost_forced_memset.o -o ostiaryd \
+          $(MACHINE_FLAGS) $(DAEMON_LIB_FLAGS)
+
+ost_main.o: Makefile ost_main.c ost.h ost_debug.h ost_runcmd.h \
+          ost_ipcache.h ost_hash.h ost_cfgparse.h
+	$(COMP) -c ost_main.c -o ost_main.o $(MACHINE_FLAGS)
+
+ost_debug.o: Makefile ost_debug.c ost.h ost_debug.h ost_globals.h
+	$(COMP) -c ost_debug.c -o ost_debug.o $(MACHINE_FLAGS)
+
+ost_runcmd.o: Makefile ost_runcmd.c ost.h ost_debug.h ost_globals.h \
+          ost_runcmd.h
+	$(COMP) -c ost_runcmd.c -o ost_runcmd.o $(MACHINE_FLAGS)
+
+ost_ipcache.o: Makefile ost_ipcache.c ost.h ost_debug.h ost_globals.h \
+          ost_ipcache.h
+	$(COMP) -c ost_ipcache.c -o ost_ipcache.o $(MACHINE_FLAGS)
+
+ost_cfgparse.o: Makefile ost_cfgparse.c ost.h ost_debug.h ost_globals.h \
+          ost_cfgparse.h
+	$(COMP) -c ost_cfgparse.c -o ost_cfgparse.o $(MACHINE_FLAGS)
+
+ost_hash.o: Makefile ost_hash.c ost.h ost_hash.h md5.h
+	$(COMP) -c ost_hash.c -o ost_hash.o $(MACHINE_FLAGS)
+
+ost_forced_memset.o: Makefile ost_forced_memset.c ost_forced_memset.h
+	$(COMP) -c ost_forced_memset.c -o ost_forced_memset.o $(MACHINE_FLAGS)
+
+ost_getpass.o: Makefile ost_getpass.c ost_getpass.h
+	$(COMP) -c ost_getpass.c -o ost_getpass.o $(MACHINE_FLAGS)
+
+md5.o: Makefile md5.c md5.h
+	$(COMP) -c md5.c -o md5.o $(MACHINE_FLAGS)
+
+ostclient: Makefile ost_client.o ost_hash.o ost_getpass.o md5.o \
+          ost_forced_memset.c ost_forced_memset.h
+	$(COMP) ost_client.o ost_hash.o ost_getpass.o md5.o \
+          ost_forced_memset.o -o ostclient $(MACHINE_FLAGS) $(CLIENT_LIB_FLAGS)
+
+ost_client.o: Makefile ost_client.c ost.h ost_hash.h md5.h
+	$(COMP) -c ost_client.c -o ost_client.o $(MACHINE_FLAGS)
+
+all: ostiaryd ostclient
+	@strip ostiaryd
+	@strip ostclient
+
+help:
+	@echo "Usage: make [target]"
+	@echo "help    - This message"
+	@echo "all     - Compile ostiaryd and ostclient"
+	@echo "clean   - Remove intermediate files"
+	@echo "clobber - Remove all but source"
+	@echo "Note: edit Makefile before running 'all'."
+

@@ -1,0 +1,13 @@
+Source: ostiary
+Section: Network
+Priority: extra
+Maintainer: Ray Ingles <sorceror171@gmail.com>
+Build-Depends: debhelper (>= 7), autotools-dev
+Standards-Version: 3.8.0
+Homepage: http://ingles.homeunix.net/software/ost/
+
+Package: ostiary
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Simple, secure remote script execution
+ Ostiary allows a client to run scripts on a server in a secure, authenticated manner, using an extremely simple protocol that is immune to buffer-overflow attacks.

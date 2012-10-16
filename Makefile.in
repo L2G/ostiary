@@ -1,0 +1,101 @@
+###########################################################################
+#
+# Boilerplate stuff.
+
+SHELL = /bin/sh
+VPATH = @srcdir@
+
+subdirs = @subdirs@
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = $(exec_prefix)/bin
+sysconfdir = @sysconfdir@
+mandir = @mandir@
+
+CC = @CC@
+CPPFLAGS = @CPPFLAGS@
+CFLAGS = $(CPPFLAGS) @CFLAGS@ -DSYSCONFDIR="$(sysconfdir)"
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+INSTALL = @INSTALL@
+LINK = $(CC) $(LDFLAGS) -o $@
+
+###########################################################################
+#
+# More specific entries.
+
+bin_PROGRAMS = ostiaryd ostclient
+
+ostiaryd_SOURCES = ost_main.c sha-256.c ost_hash.c ost_debug.c ost_runcmd.c ost_ipcache.c ost_cfgparse.c ost_forced_memset.c
+ostiaryd_OBJECTS = ost_main.o sha-256.o ost_hash.o ost_debug.o ost_runcmd.o ost_ipcache.o ost_cfgparse.o ost_forced_memset.o
+ostiaryd_LDFLAGS = @LIBWRAP_LDFLAG@
+
+ostclient_SOURCES = ost_client.c sha-256.c ost_hash.c ost_getpass.c ost_forced_memset.c
+ostclient_OBJECTS = ost_client.o sha-256.o ost_hash.o ost_getpass.o ost_forced_memset.o
+
+noinst_HEADERS = sha-256.h ost.h ost_debug.h ost_hash.h ost_cfgparse.h ost_ipcache.h ost_globals.h ost_forced_memset.h ost_getpass.h ost_runcmd.h
+
+#sysconf_DATA = sample_ostiary.cfg
+
+default:: help
+
+# Note that we don't just 'rm *.o' - if we didn't make it, we have
+# no business rm'ing it.
+clean::
+	rm -f sha-256.o ost_main.o ost_debug.o ost_runcmd.o ost_ipcache.o \
+              ost_cfgparse.o ost_client.o ost_hash.o ost_getpass.o \
+              ost_forced_memset.o
+
+clobber:: clean
+	rm -f ostiaryd ostclient ostiaryd.exe ostclient.exe
+
+distclean:: clobber
+	rm -rf config.h Makefile build-indep-stamp build-arch-stamp config.sub \
+               config.guess config.status config.log autom4te.cache debiain/ostiary
+
+$(ostiaryd_OBJECTS): config.h
+
+ostiaryd: $(ostiaryd_OBJECTS) $(ostiaryd_DEPENDENCIES)
+	$(LINK) $(ostiaryd_LDFLAGS) $(ostiaryd_OBJECTS) $(ostiaryd_LDADD) $(LIBS)
+ostclient: $(ostclient_OBJECTS) $(ostclient_DEPENDENCIES)
+	$(LINK) $(ostclient_LDFLAGS) $(ostclient_OBJECTS) $(ostclient_LDADD) $(LIBS)
+
+help:
+	@echo "Usage: make [target]"
+	@echo "help    - This message"
+	@echo "all     - Compile ostiaryd and ostclient"
+	@echo "strip   - Remove debugging symbols from ostiaryd and ostclient"
+	@echo "clean   - Remove intermediate files"
+	@echo "clobber - Remove all but source and ./configure output"
+	@echo "distclean - Remove all but source"
+
+install: all
+	$(top_srcdir)/mkinstalldirs $(bindir)
+	$(top_srcdir)/mkinstalldirs $(sysconfdir)
+	$(top_srcdir)/mkinstalldirs "$(mandir)/man1"
+	$(top_srcdir)/mkinstalldirs "$(mandir)/man5"
+	$(top_srcdir)/mkinstalldirs "$(mandir)/man8"
+	$(INSTALL) -m 0755 ostiaryd $(bindir)
+	$(INSTALL) -m 0755 ostclient $(bindir)
+	$(INSTALL) -m 0600 tests/ostiary.cfg $(sysconfdir)
+	$(INSTALL) man/man1/ostclient.1  "$(mandir)/man1"
+	$(INSTALL) man/man5/ostiary.cfg.5 "$(mandir)/man5"
+	$(INSTALL) man/man8/ostiaryd.8 "$(mandir)/man8"
+
+uninstall:
+	-/bin/rm -f $(bindir)/ostiaryd
+	-/bin/rm -f $(bindir)/ostclient
+	-/bin/rm -f $(sysconfdir)/ostiary.cfg
+
+PROGRAMS = $(bin_PROGRAMS)
+
+# These things are supposed to be small, so it's nice to strip out
+# the debug symbols. This cuts the size of the client by two thirds
+# on some platforms.
+strip: $(PROGRAMS)
+	strip $(PROGRAMS)
+
+all: $(PROGRAMS) $(HEADERS) Makefile
+

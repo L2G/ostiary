@@ -1,0 +1,97 @@
+v4.0
+  - Use HMAC-SHA256 instead of HMAC-SHA1. Note that this breaks
+    backward compatibility!
+  - Minor corrections to log messages
+
+v3.41
+  - Don't count '#' char in quoted strings as start of comment
+  - Mix in process PID with time to make seed hashes less predictable
+  - Rearrange include files to support older FreeBSD versions
+  - Seeds, script writing clarifications in docs
+  - Add a couple more paths to search for the ostiary.cfg file
+  - Initial support for .deb packaging
+
+v3.4
+  - Fix uninit variable in command option parsing
+  - Fix some log message argument errors
+  - Correct libwrap autoconf macros
+
+v3.3
+  - Allow script to be run when an IP is locked out
+  - Minor bugfix to Run_Command function, properly parse exit status
+  - Fix sample 'enable-ssh-tcpd.sh' script, improve error checking
+
+v3.2
+  - Log package version on startup, and in client usage
+  - Chdir to dir containing config file or "/" on startup
+  - Minor corrections to man pages
+
+v3.1b
+  - Use HMAC-SHA1 instead of HMAC-MD5. Note that this breaks
+    backward compatibility!
+  - Remove pidfile when exiting for all cases.
+  - Fully document how to change the hash function used.
+
+v3.01b
+  - Create & manage pidfile.
+
+v3.0b
+  - Allow ostiaryd to restart cleanly on SIGHUP
+
+v2.31
+ - Allow comments at end of line, after config values
+
+v2.3
+ - Close socket after fork, before executing command
+   (solve port locked after daemon exits)
+ - Handle completely blank lines in config file
+
+v2.2
+ - Add MAX_SINGLE_ERRS, MAX_TOTAL_ERRS defensive limits
+
+v.2.1
+ - Don't exit on SIGPIPE
+ - Don't abort on accept error
+ - Enforce connection delay (throttle) in all cases
+ - Add "-D" option to ostiaryd to prevent detaching
+ - Allow ostclient to read passphrase from file descriptor
+ - Executables no longer stripped by default, broke on Cygwin
+
+v.2.0
+ - Endian problems fixed, config.h not included properly in md5.c
+ - Man pages added
+ - Corrected comments in ost_hash.c
+
+v.1.95b
+ - ostiaryd warns if init failed
+ - Default log level is LOG_NOTICE (was LOG_ERR)
+ - Cmdline usage messages improved
+
+v.1.94b
+ - Changed search for config file, looks in many more places
+   before giving up.
+
+v.1.93b
+ - Updated rpm .spec file, some documentation changes
+
+v.1.92b
+ - Initial stab at rpm .spec support.
+
+v.1.91b
+ - Updated to use autoconf, no more hand-editing Makefiles
+ - Failure to lock memory not fatal anymore, but always attempted
+   (This locks at most two pages (e.g. 8K on Intel) and I think
+   anyone can afford that much.)
+
+v1.81b
+ - Switched to HMAC (see RFC 2104) for hash
+ - Better password hygiene
+   - Force clearing of memory containing passwords on exit
+   - Lock memory containing passwords to avoid swapping them out
+   - Block production of core files
+ - Allow leading whitespace in config file
+ - Numerous typos in comments fixed
+ - Windows client official
+
+v1.0
+ - Initial release

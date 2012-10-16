@@ -1,0 +1,6 @@
+TODO
+ - Split up 'client' and 'daemon' packages
+ - Clean up config file format
+ - Write CGI-to-ostiary gateway?
+ - IP v6?
+ - Set up ostiaryd to run at boot?

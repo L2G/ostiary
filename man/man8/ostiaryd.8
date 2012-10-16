@@ -1,0 +1,178 @@
+.\" Copyright (C) 2003 Raymond Ingles.
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the
+.\" Free Software Foundation; either version 2, or (at your option) any
+.\" later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software Foundation,
+.\" Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+
+.\" $Id: ostiaryd.2.0,v 0.10.00 2004/01/25 20:12:11 worsel Exp $
+.\" .Dd January 25, 2004
+.PU
+.TH ostiaryd 8
+.SH NAME
+ostiaryd - Ostiary daemon (remote script execution program)
+.SH SYNOPSIS
+.B ostiaryd
+[
+.RB "\-c"
+.I file
+] [
+.RB "\-d"
+.I delay
+] [
+.RB "\-i"
+.I ip_addr
+] [
+.RB "\-p"
+.I port
+] [
+.RB "\-s"
+.I seed
+] [
+.RB "\-r "
+] [
+.RB "\-v "
+] [
+.RB "\-D "
+]
+
+.SH DESCRIPTION
+.B ostiaryd
+(Ostiary daemon) is a program for executing commands on a machine
+in response to commands from a remote client. It is intended as a
+limited but highly secure alternative to ssh and lsh.
+
+.B ostiaryd
+listens for connections at the specified
+.I address 
+and
+.IR port .
+When a connection is made,
+.B ostiaryd
+sends a 'salt hash' to the client, and receives an HMAC hash in
+return, which is based on the salt and a shared secret passphrase.
+.B ostiaryd
+compares this reply with the hashes of the commands it has been
+configured with. If a match is found, the corresponding command
+is executed.
+
+Generally
+.B ostiaryd
+reads its configuration information from
+.BR ostiary.cfg (5),
+but these can be overridden with command-line options as detailed below.
+
+If
+.B ostiaryd
+receives a SIGHUP signal, it will close any existing connections, clear
+out the kill password and list of commands, and reread its configuration
+file. It is worth noting that
+.B ostiaryd
+does not do a complete reinitialization, but rather updates only the
+the values specified in the
+.BR ostiary.cfg (5)
+file. The RNG is not reseeded, and the 'bad IP address cache' is not
+cleared. The command-line options
+.B ostiaryd
+was started with (see below) are not reread; the values in the
+.BR ostiary.cfg (5)
+file, if any, will take precedence.
+
+.SH OPTIONS
+.TP
+.BI "\-c" " file"
+
+If this option is present,
+.B ostiaryd
+will read its configuration information from
+.I file
+instead of the default configuration file.
+.TP
+.BI "\-d" " delay"
+
+Specifies the
+.IR delay ,
+in seconds, that
+.B ostiaryd
+will pause between accepting connections from clients.
+.TP
+.BI "\-i" " ip_addr"
+
+Specifies the
+.I ip_addr 
+that
+.B ostiaryd
+will listen on, ignoring all other network interfaces and any
+value listed in the configuration file.
+.TP
+.BI "\-p" " port"
+
+Specifies the
+.I port
+that
+.B ostiaryd
+will listen on, ignoring any port defined in the configuration file.
+.TP
+.BI "\-s" " seed"
+
+Provides a
+.I seed
+for
+.BR random (3).
+It is strongly advised that this not be a static number,
+but rather be obtained from a secure and unpredictable source. (At the very
+least, use something like the bash shell's $RANDOM variable.)
+If this option is not present, the current time from
+.BR time (2)
+will be used as the seed. Generally used in conjunction with
+.BR "\-r" .
+
+.TP
+.B "\-r"
+.br
+Ignore
+.IR /dev/urandom ,
+instead using
+.BR random (3)
+to generate random values for use in the salt. This can be used
+to conserve entropy for use in other applications.
+
+.TP
+.B "\-v"
+.br
+Sets the log level to
+.IR LOG_INFO ,
+providing more verbose output to the system log than normal.
+
+.TP
+.B "\-D"
+.br
+Tells
+.B ostiaryd
+not to detach from its controlling terminal; useful when running from service
+managers like
+.BR inetd (8)
+and
+.BR daemontools (8).
+
+.SH AUTHORS
+.B ostiaryd
+was developed by Raymond Ingles.
+.SH SEE ALSO
+.BR ostclient (1),
+.BR ostiary.cfg (5)
+
+H. Krawczyk, M. Bellare, R. Canetti,
+.I HMAC: Keyed-Hashing for Message Authentication
+.br
+February 1997,
+.B RFC 2104

@@ -1,0 +1,53 @@
+           Note on the Hash Function(s) Used By Ostiary
+
+ It's relatively easy to change the hash function that Ostiary uses.
+While as distributed it now uses SHA-256, it can use any hash function
+you like, so long as you have an implementation for it. Note that
+even the recent advances in finding a collision for SHA-1 do not (yet)
+impact its security as used in Ostiary, so far as I can tell. I'm
+just being paranoid in moving to SHA-256.
+
+ First off, since Ostiary uses HMAC, the IV (initialization vector)
+of the hash function isn't known to the attacker, so finding a
+collision becomes much, much harder. Even then, finding two inputs
+X and Y that hash to the same value Z doesn't help a lot. This is
+because Ostiary uses a different, hopefully random salt for each
+transaction. It's a somewhat harder problem to find a Y value such
+that, for given (different) salts S1 and S2, hash(X+S1) = hash(Y+S1),
+*and* hash(X+S2) = hash(Y+S2). (Yes, MD5 is a 'chained' hash, but
+HMAC hashes *twice* with *different* IVs.)
+
+ Worse than that, the attacker doesn't get to pick the salt. At most,
+they can, under some circumstances (e.g. /dev/urandom exhausted or
+unavailable) predict what the next salt will likely be. In practice,
+they would have to find an X-Y pair valid for a wide range of
+potential salts - and from what I can see, it's easier to just try to
+guess the real password X.
+
+ Now, it may be that some feature of the newer collision attacks allow
+an attacker to limit the range of potential candidates in a
+brute-force or dictionary password attack, and make it easier to crack
+passwords - but I haven't seen any indication of this. I'm not going
+to lose sleep (yet).
+
+ But if you're not reassured by the above (and maybe you shouldn't be,
+I'm not exactly a crypto expert), you can change Ostiary to use a
+different hash function (perhaps something like Tiger or Whirlpool).
+
+ To do this, you first need to change two #defines in "ost_hash.h".
+HASH_BIN_SIZE is the size in bytes of the hash output; for example,
+it's 20 bytes for SHA-1, and 32 for SHA-256. HASH_BLOCK_SIZE is the amount
+of data (in bytes) that the hash function operates on at one time. For
+example, in both SHA-1 and SHA-256, this is 64 bytes (512 bits).
+
+ Second, you need to actually call the other function in the file
+"ost_hash.c". Change the calls to "sha256_buffer()" to, e.g.,
+"uberhash_buffer()". HMAC per se doesn't care what hash function gets
+used, it treats the hash as a black box.
+
+ The main problem with this, of course, is that regular clients
+won't work with your new version, and your new clients won't work
+with other versions of Ostiary. Depending on your situation, of
+course, this may not be a major issue. It may even be desirable
+if you're going for a certain level of "security through
+obscurity".
