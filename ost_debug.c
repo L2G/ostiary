@@ -20,7 +20,7 @@
 /* Open log file. */
 void Open_Log_File(const char *ident)
 {
-  openlog(ident, 0, LOG_AUTH);
+  openlog(ident, LOG_CONS, LOG_AUTH);
 }
 
 /* Close log file. */
